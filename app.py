@@ -6,15 +6,24 @@ import os
 # --- CONFIGURACIÓN E INTERFAZ ---
 st.set_page_config(page_title="Quiz Master RRPP", layout="centered")
 
+# CSS Modificado para asegurar que el texto sea visible (Negro sobre Gris claro)
 st.markdown("""
     <style>
     .stButton>button { width: 100%; border-radius: 8px; height: 3em; font-weight: bold; }
-    .justificacion { background-color: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 5px solid #007bff; margin-top: 10px; }
+    .justificacion { 
+        background-color: #f8f9fa; 
+        padding: 15px; 
+        border-radius: 10px; 
+        border-left: 5px solid #007bff; 
+        margin-top: 10px;
+        color: #1c1c1e !important; /* Fuerza el color de texto a negro/oscuro */
+    }
+    /* Asegurar visibilidad en mensajes de éxito/error si el tema falla */
+    .stAlert p { color: #1c1c1e !important; } 
     </style>
     """, unsafe_allow_html=True)
 
 # --- GESTIÓN DE ESTADO (MEMORIA DE LA APP) ---
-# Esto evita que la app se resetee al hacer clic
 if 'pagina' not in st.session_state:
     st.session_state.pagina = 'SELECCION_ARCHIVO'
     st.session_state.preguntas = []
@@ -53,10 +62,8 @@ elif st.session_state.pagina == 'SELECCION_TEMA':
         xls = pd.ExcelFile(st.session_state.archivo_actual)
         for hoja in xls.sheet_names:
             if st.button(hoja):
-                # Cargar y mezclar preguntas
                 df = pd.read_excel(st.session_state.archivo_actual, sheet_name=hoja)
                 preguntas = df.to_dict('records')
-                # Limpiar datos vacíos
                 for p in preguntas:
                     for k, v in p.items():
                         if pd.isna(v): p[k] = ""
@@ -84,7 +91,6 @@ elif st.session_state.pagina == 'QUIZ':
     opciones = [p[f'OPCION {l}'] for l in ['A','B','C','D','E','F','G'] if p.get(f'OPCION {l}')]
 
     if not st.session_state.respondido:
-        # --- MODO RESPUESTA ---
         if tipo == 'relacionar':
             st.info("Empareja los elementos correctamente:")
             pares = [par.split(' - ') for par in correcta_raw.split(';') if ' - ' in par]
@@ -106,7 +112,6 @@ elif st.session_state.pagina == 'QUIZ':
             st.session_state.seleccion_unica = st.radio("Elige una opción:", opciones, index=None)
 
         if st.button("Validar"):
-            # Lógica de corrección
             if tipo == 'relacionar':
                 res_u = set(f"{k} - {v}" for k,v in st.session_state.mapa_relacion.items() if v != "Selecciona...")
                 res_c = set(par.strip() for par in correcta_raw.split(';'))
@@ -124,13 +129,13 @@ elif st.session_state.pagina == 'QUIZ':
             st.rerun()
 
     else:
-        # --- MODO FEEDBACK ---
         if st.session_state.es_correcta:
             st.success("✅ ¡CORRECTO!")
         else:
             st.error(f"❌ INCORRECTO\n\nRespuesta correcta:\n{correcta_raw}")
         
         if p.get('JUSTIFICACION'):
+            # El CSS de arriba asegura que este texto sea oscuro
             st.markdown(f'<div class="justificacion"><b>📖 Justificación:</b><br>{p["JUSTIFICACION"]}</div>', unsafe_allow_html=True)
         
         if st.button("Siguiente Pregunta →"):
@@ -147,7 +152,10 @@ elif st.session_state.pagina == 'RESULTADOS':
     total = len(st.session_state.preguntas)
     nota = (st.session_state.puntuacion / total) * 100 if total > 0 else 0
     
-    # Mostrar imagen según nota (70% umbral)
+    # --- AÑADIR MÚSICA ---
+    if os.path.exists("musica.mp3"):
+        st.audio("musica.mp3", format="audio/mp3", autoplay=True)
+    
     img = "1.png" if nota >= 70 else "2.png"
     if os.path.exists(img):
         st.image(img, use_container_width=True)
