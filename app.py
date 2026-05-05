@@ -175,9 +175,9 @@ elif st.session_state.pagina == 'RESULTADOS':
     nota = (st.session_state.puntuacion / total) * 100 if total > 0 else 0
     
     # MUSICA AUTOMÁTICA
-    archivo_musica = "aprobado.mp3" if nota >= 70 else "suspendido.mp3"
+    archivo_musica = "aprobado.wav" if nota >= 70 else "suspendido.wav"
     if os.path.exists(archivo_musica):
-        st.audio(archivo_musica, format="audio/mp3", autoplay=True)
+        st.audio(archivo_musica, format="audio/wav", autoplay=True)
     
     img = "1.png" if nota >= 70 else "2.png"
     if os.path.exists(img):
