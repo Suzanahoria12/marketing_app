@@ -152,10 +152,13 @@ elif st.session_state.pagina == 'RESULTADOS':
     total = len(st.session_state.preguntas)
     nota = (st.session_state.puntuacion / total) * 100 if total > 0 else 0
     
-    # --- AÑADIR MÚSICA ---
-    if os.path.exists("musica.mp3"):
-        st.audio("musica.mp3", format="audio/mp3", autoplay=True)
+    # --- LÓGICA DE AUDIO Y MÚSICA SEGÚN NOTA ---
+    archivo_musica = "aprobado.mp3" if nota >= 70 else "suspendido.mp3"
     
+    if os.path.exists(archivo_musica):
+        st.audio(archivo_musica, format="audio/mp3", autoplay=True)
+    
+    # Lógica de imagen (se mantiene igual)
     img = "1.png" if nota >= 70 else "2.png"
     if os.path.exists(img):
         st.image(img, use_container_width=True)
